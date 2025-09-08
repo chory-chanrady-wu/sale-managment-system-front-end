@@ -2,6 +2,27 @@
   text-align: center;
 }
 
+@keyframes pop {
+  0% { transform: translateY(-20px) scale(0.5); opacity: 0; }
+  50% { transform: translateY(0) scale(1.2); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.animate-pop { animation: pop 0.5s ease forwards; }
+
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease forwards;
+}
+/* Style for date input placeholder */
+input[type="date"] {
+  position: relative;
+}
+
+input[type="date"]:not(:focus):not([value])::before {
+  content: attr(placeholder);
+  color: #9ca3af; /* Tailwind gray-400 */
+  margin-left: 0.5rem;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
