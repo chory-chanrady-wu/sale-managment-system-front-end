@@ -1,34 +1,196 @@
 import React, { useState, useEffect } from "react";
-import FormContainer from "../components/FormContainer";
-import { fetchJobs, saveJob } from "../api";
+import axios from "axios";
+import Toast from "../components/Toast";
 
-export default function JobsForm() {
-  const [jobs, setJobs] = useState([]);
-  const [formData, setFormData] = useState({ Job_Title: "", Min_Salary: "", Max_Salary: "" });
+export default function ProductForm({ product, productTypes = [], onClose, onSaved }) {
+  const [formData, setFormData] = useState({
+    PRODUCTNAME: "",
+    PRODUCTTYPE: "",
+    UNIT_MEASURE: "",
+    REORDER_LEVEL: "",
+    COST_PRICE: "",
+    SELL_PRICE: "",
+    QTY_ON_HAND: "",
+  });
 
-  useEffect(() => { loadJobs(); }, []);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
-  const loadJobs = async () => setJobs((await fetchJobs()).data);
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-  const handleSubmit = async (e) => { e.preventDefault(); await saveJob(formData); setFormData({ Job_Title: "", Min_Salary: "", Max_Salary: "" }); loadJobs(); };
+  const showToast = (msg, type = "success") => setToast({ show: true, message: msg, type });
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        PRODUCTNAME: product.PRODUCTNAME || "",
+        PRODUCTTYPE: product.PRODUCTTYPE || "",
+        UNIT_MEASURE: product.UNIT_MEASURE || "",
+        REORDER_LEVEL: product.REORDER_LEVEL || "",
+        COST_PRICE: product.COST_PRICE || "",
+        SELL_PRICE: product.SELL_PRICE || "",
+        QTY_ON_HAND: product.QTY_ON_HAND || "",
+      });
+      setPhotoPreview(product.PHOTO || "");
+    }
+  }, [product]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setPhotoFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPhotoPreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) data.append(key, value);
+    });
+    if (photoFile) data.append("PHOTO", photoFile);
+
+    try {
+      if (product) {
+        await axios.put(
+          `http://localhost:4000/api/products/${product.PRODUCT_NO}`,
+          data,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        showToast("Product updated successfully");
+      } else {
+        await axios.post(
+          "http://localhost:4000/api/products",
+          data,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        showToast("Product created successfully");
+      }
+      onSaved();
+      onClose();
+    } catch (err) {
+      console.error("Save product error:", err.response?.data || err);
+      showToast(err.response?.data?.error || "Failed to save product", "error");
+    }
+  };
 
   return (
-    <FormContainer title="Jobs Form">
-      <form onSubmit={handleSubmit} className="mb-4">
-        <table className="min-w-full border border-gray-300">
-          <tbody>
-            <tr className="border-b"><td className="p-2">Job Title</td><td><input name="Job_Title" value={formData.Job_Title} onChange={handleChange} className="w-full border p-1 rounded" /></td></tr>
-            <tr className="border-b"><td>Min Salary</td><td><input type="number" name="Min_Salary" value={formData.Min_Salary} onChange={handleChange} className="w-full border p-1 rounded" /></td></tr>
-            <tr><td>Max Salary</td><td><input type="number" name="Max_Salary" value={formData.Max_Salary} onChange={handleChange} className="w-full border p-1 rounded" /></td></tr>
-          </tbody>
-        </table>
-        <button type="submit" className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
-      </form>
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-w-full">
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
 
-      <table className="min-w-full border border-gray-300">
-        <thead className="bg-gray-100"><tr><th className="p-2 border">Job ID</th><th className="p-2 border">Job Title</th><th className="p-2 border">Min Salary</th><th className="p-2 border">Max Salary</th></tr></thead>
-        <tbody>{jobs.map(j => <tr key={j.JOB_ID} className="border-b"><td className="p-2 border">{j.JOB_ID}</td><td className="p-2 border">{j.Job_Title}</td><td className="p-2 border">{j.Min_Salary}</td><td className="p-2 border">{j.Max_Salary}</td></tr>)}</tbody>
-      </table>
-    </FormContainer>
+      <h2 className="text-xl font-bold mb-4 text-center">
+        {product ? "Edit Product" : "New Product"}
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          name="PRODUCTNAME"
+          placeholder="Product Name"
+          value={formData.PRODUCTNAME}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        />
+
+        <select
+          name="PRODUCTTYPE"
+          value={formData.PRODUCTTYPE}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+          required
+        >
+          <option value="">Select Product Type</option>
+          {productTypes.map((pt) => (
+            <option key={pt.PRODUCTTYPE_ID} value={pt.PRODUCTTYPE_ID}>
+              {pt.PRODUCTTYPE_NAME}
+            </option>
+          ))}
+        </select>
+
+        <input
+          name="UNIT_MEASURE"
+          placeholder="Unit Measure"
+          value={formData.UNIT_MEASURE}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="REORDER_LEVEL"
+          placeholder="Reorder Level"
+          value={formData.REORDER_LEVEL}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="COST_PRICE"
+          placeholder="Cost Price"
+          value={formData.COST_PRICE}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="SELL_PRICE"
+          placeholder="Sell Price"
+          value={formData.SELL_PRICE}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+        <input
+          type="number"
+          name="QTY_ON_HAND"
+          placeholder="Quantity On Hand"
+          value={formData.QTY_ON_HAND}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
+
+        <div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full border p-2 rounded mb-2"
+          />
+          {photoPreview && (
+            <img
+              src={photoPreview}
+              alt="Preview"
+              className="w-full h-48 object-cover rounded"
+            />
+          )}
+        </div>
+
+        <div className="flex justify-end space-x-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            {product ? "Update" : "Create"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

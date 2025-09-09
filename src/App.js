@@ -1,5 +1,5 @@
-import React from "react";
-import { ToastContainer } from 'react-toastify';
+//import React from "react";
+//import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Helmet } from "react-helmet";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
@@ -10,7 +10,7 @@ import EmployeesManagement from "./pages/EmployeesManagement";
 import ClientTypes from "./pages/ClientType";
 import ClientManagement from "./pages/ClientManagement";
 import ProductTypeManagement from "./pages/ProductTypeManagement";
-import ProductForm from "./forms/ProductForm";
+import ProductManagement from "./pages/ProductManagement";
 import InvoiceForm from "./forms/InvoiceForm";
 
 function RouteWithTitle({ element: Element, title }) {
@@ -41,7 +41,7 @@ export default function App() {
             <Route path="/client-types" element={<RouteWithTitle element={ClientTypes} title="Client Types" />} />
             <Route path="/clients" element={<RouteWithTitle element={ClientManagement} title="Clients Management" />} />
             <Route path="/product-types" element={<RouteWithTitle element={ProductTypeManagement} title="Product Types" />} />
-            <Route path="/products" element={<RouteWithTitle element={ProductForm} title="Products" />} />
+            <Route path="/products" element={<RouteWithTitle element={ProductManagement} title="Products" />} />
             <Route path="/invoices" element={<RouteWithTitle element={InvoiceForm} title="Invoices" />} />
           </Routes>
         </main>

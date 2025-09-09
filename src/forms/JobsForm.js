@@ -45,9 +45,11 @@ export default function JobsForm({ job, onClose, onSaved }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px]">
-      <h2 className="text-xl font-bold mb-4">{job ? "Edit Job" : "New Job"}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-w-full">
+      <h2 className="text-xl font-bold mb-4 text-center">
+        {job ? "Edit Job" : "New Job"}
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="text"
           name="Job_Title"
@@ -94,7 +96,7 @@ export default function JobsForm({ job, onClose, onSaved }) {
             type="submit"
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
-            {job ? "Update" : "Save"}
+            {job ? "Update" : "Create"}
           </button>
         </div>
       </form>

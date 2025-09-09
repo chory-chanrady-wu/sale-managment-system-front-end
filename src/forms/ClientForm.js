@@ -122,7 +122,7 @@ export default function ClientForm({ editing, onSuccess, onCancel }) {
       onSubmit={handleSubmit}
       className="max-w-md mx-auto p-4 border rounded shadow bg-white"
     >
-      <h2 className="text-xl font-bold mb-4">
+      <h2 className="text-xl font-bold mb-4 text-center">
         {editing ? "Edit Client" : "New Client"}
       </h2>
 

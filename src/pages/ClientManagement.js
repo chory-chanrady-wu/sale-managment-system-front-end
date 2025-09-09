@@ -3,6 +3,7 @@ import axios from "axios";
 import ClientForm from "../forms/ClientForm";
 import Toast from "../components/Toast";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import FormContainer from "../components/FormContainer";
 
 export default function ClientManagement() {
   const [clients, setClients] = useState([]);
@@ -97,60 +98,57 @@ export default function ClientManagement() {
   const cities = Array.from(new Set(clients.map((c) => c.CITY).filter(Boolean)));
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Client Management</h1>
+    <FormContainer title="Client Management">
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="border p-2 rounded flex-1"
+          />
 
-      <div className="flex mb-4 space-x-2 items-center">
-        <input
-          type="text"
-          placeholder="Search by name..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="border p-2 rounded flex-1"
-        />
-
-        <select
-          value={cityFilter}
-          onChange={(e) => setCityFilter(e.target.value)}
-          className="border p-2 rounded"
-        >
+          <select
+            value={cityFilter}
+            onChange={(e) => setCityFilter(e.target.value)}
+            className="border p-2 rounded"
+          >
           <option value="">All City</option>
           {cities.map((city) => (
             <option key={city} value={city}>{city}</option>
           ))}
-        </select>
+          </select>
 
-        <select
-          value={sortField}
-          onChange={(e) => setSortField(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">Sort By</option>
-          <option value="CLIENTNAME">Name</option>
-          <option value="CITY">City</option>
-          <option value="CLIENT_TYPE">Client Type</option>
-        </select>
+          <select
+            value={sortField}
+            onChange={(e) => setSortField(e.target.value)}
+            className="border p-2 rounded"
+          >
+            <option value="">Sort By</option>
+            <option value="CLIENTNAME">Name</option>
+            <option value="CITY">City</option>
+            <option value="CLIENT_TYPE">Client Type</option>
+          </select>
 
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="border p-2 rounded"
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
 
-        <button
-          onClick={handleAdd}
-          className="ml-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          New Client
-        </button>
-      </div>
-
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <button
+              onClick={handleAdd}
+              className="ml-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+            New Client
+          </button>
+        </div>
+          {/* Form Modal */}
+          {showForm && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="w-full max-w-lg relative">
             <button
               onClick={() => setShowForm(false)}
@@ -167,14 +165,10 @@ export default function ClientManagement() {
         </div>
       )}
 
-      {loading ? (
-        <p>Loading clients...</p>
-      ) : filteredClients.length === 0 ? (
-        <p>No clients found.</p>
-      ) : (
+      
         <table className="table-auto border border-black w-full min-w-max">
-          <thead>
-            <tr className="bg-green-500 top-0 z-10">
+          <thead className="bg-green-500 top-0 z-10">
+            <tr>
               <th className="border px-2 py-1">Client No</th>
               <th className="border px-2 py-1">Name</th>
               <th className="border px-2 py-1">Gender</th>
@@ -189,7 +183,7 @@ export default function ClientManagement() {
           </thead>
           <tbody>
             {filteredClients.map((client) => (
-              <tr key={client.CLIENT_NO}>
+              <tr key={client.CLIENT_NO} className="border-b hover:bg-gray-100">
                 <td className="text-center border px-2 py-1">{client.CLIENT_NO}</td>
                 <td className="border px-2 py-1">{client.CLIENTNAME}</td>
                 <td className="text-center border px-2 py-1">{client.GENDER}</td>
@@ -202,7 +196,7 @@ export default function ClientManagement() {
                 <td className="text-center border px-2 py-1 space-x-1">
                   <button
                     onClick={() => handleEdit(client)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                    className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
                   >
                     Edit
                   </button>
@@ -217,9 +211,7 @@ export default function ClientManagement() {
               </tr>
             ))}
           </tbody>
-        </table>
-      )}
-
+          </table>
       {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
         show={!!confirmDeleteId}
@@ -235,6 +227,6 @@ export default function ClientManagement() {
         type={toast.type}
         onClose={() => setToast({ ...toast, show: false })}
       />
-    </div>
+    </FormContainer>
   );
 }

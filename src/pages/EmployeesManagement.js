@@ -155,41 +155,41 @@ export default function EmployeesManagement() {
           New Employee
         </button>
       </div>
-
+      
       {/* Employee Table */}
       <div className="overflow-x-auto">
         <table className="table-auto border border-black w-full min-w-max">
           <thead className="bg-green-500 top-0 z-10">
             <tr>
-              <th className="p-2 border text-center">ID</th>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border text-center">Gender</th>
-              <th className="p-2 border text-center">Birth Date</th>
-              <th className="p-2 border">Job</th>
-              <th className="p-2 border">Working Site</th>
-              <th className="p-2 border">Phone</th>
-              <th className="p-2 border">Address</th>
-              <th className="p-2 border text-center">Salary</th>
-              <th className="p-2 border text-center">Action</th>
+              <th className="px-2 py-1 border text-center">ID</th>
+              <th className="px-2 py-1 border">Name</th>
+              <th className="px-2 py-1 border text-center">Gender</th>
+              <th className="px-2 py-1 border text-center">Birth Date</th>
+              <th className="px-2 py-1 border">Job</th>
+              <th className="px-2 py-1 border">Working Site</th>
+              <th className="px-2 py-1 border">Phone</th>
+              <th className="px-2 py-1 border">Address</th>
+              <th className="px-2 py-1 border text-center">Salary</th>
+              <th className="px-2 py-1 border text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredEmployees.map((e) => {
               const jobTitle = jobs.find((j) => j.JOB_ID === e.JOB_ID)?.JOB_TITLE || "";
               return (
-                <tr key={e.EMPLOYEEID} className="border-b">
-                  <td className="p-2 border text-center">{e.EMPLOYEEID}</td>
-                  <td className="p-2 border break-words">{e.EMPLOYEENAME}</td>
-                  <td className="p-2 border text-center">{e.GENDER}</td>
-                  <td className="p-2 border text-center">
+                <tr key={e.EMPLOYEEID} className="border-b hover:bg-gray-100">
+                  <td className="px-2 py-1 border text-center">{e.EMPLOYEEID}</td>
+                  <td className="px-2 py-1 border break-words">{e.EMPLOYEENAME}</td>
+                  <td className="px-2 py-1 border text-center">{e.GENDER}</td>
+                  <td className="px-2 py-1 border text-center">
                     {e.BIRTHDATE ? new Date(e.BIRTHDATE).toLocaleDateString('en-GB') : ''}
                   </td>
-                  <td className="p-2 border break-words">{e.JOB_ID ? jobTitle : ''}</td>
-                  <td className="p-2 border break-words">{e.WORKING_SITE}</td>
-                  <td className="p-2 border break-words">{e.PHONE}</td>
-                  <td className="p-2 border break-words">{e.ADDRESS}</td>
-                  <td className="p-2 border text-center">{e.SALARY}$</td>
-                  <td className="p-2 border text-center space-x-1">
+                  <td className="px-2 py-1 border break-words">{e.JOB_ID ? jobTitle : ''}</td>
+                  <td className="px-2 py-1 border break-words">{e.WORKING_SITE}</td>
+                  <td className="px-2 py-1 border break-words">{e.PHONE}</td>
+                  <td className="px-2 py-1 border break-words">{e.ADDRESS}</td>
+                  <td className="px-2 py-1 border text-center">{e.SALARY}$</td>
+                  <td className="px-2 py-1 border text-center space-x-1">
                     <button
                       onClick={() => handleEdit(e)}
                       className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"

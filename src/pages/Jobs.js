@@ -153,25 +153,25 @@ export default function JobsManagement() {
         <p>Loading jobs...</p>
       ) : (
         <table className="min-w-full border border-black">
-          <thead className="bg-green-500">
+          <thead className="bg-green-500 top-0 z-10">
             <tr>
-              <th className="p-2 border">Job ID</th>
-              <th className="p-2 border">Job Title</th>
-              <th className="p-2 border">Department</th>
-              <th className="p-2 border">Min Salary</th>
-              <th className="p-2 border">Max Salary</th>
-              <th className="p-2 border">Action</th>
+              <th className="px-2 py-1 border">Job ID</th>
+              <th className="px-2 py-1 border">Job Title</th>
+              <th className="px-2 py-1 border">Department</th>
+              <th className="px-2 py-1 border">Min Salary</th>
+              <th className="px-2 py-1 border">Max Salary</th>
+              <th className="px-2 py-1 border">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredJobs.map((j) => (
-              <tr key={j.JOB_ID} className="border-b">
-                <td className="p-2 text-center border">{j.JOB_ID}</td>
-                <td className="p-2 border">{j.JOB_TITLE}</td>
-                <td className="p-2 border">{j.DEPARTMENT}</td>
-                <td className="p-2 text-center border">{j.MIN_SALARY}$</td>
-                <td className="p-2 text-center border">{j.MAX_SALARY}$</td>
-                <td className="p-2 border text-center space-x-2">
+              <tr key={j.JOB_ID} className="border-b hover:bg-gray-100">
+                <td className="px-2 py-1 text-center border">{j.JOB_ID}</td>
+                <td className="px-2 py-1 border">{j.JOB_TITLE}</td>
+                <td className="px-2 py-1 border">{j.DEPARTMENT}</td>
+                <td className="px-2 py-1 text-center border">{j.MIN_SALARY}$</td>
+                <td className="px-2 py-1 text-center border">{j.MAX_SALARY}$</td>
+                <td className="px-2 py-1 border text-center space-x-2">
                   <button
                     onClick={() => handleEdit(j)}
                     className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
@@ -194,7 +194,7 @@ export default function JobsManagement() {
 
       {/* Jobs Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-2 z-20">
           <JobsForm
             job={editingJob}
             onClose={() => setShowForm(false)}

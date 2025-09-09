@@ -93,7 +93,7 @@ export default function ClientTypes() {
       />
 
       {/* Controls */}
-      <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4 space-y-2 md:space-y-0">
+      <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
         <input
           type="text"
           placeholder="Search Client Type or Type Name..."
@@ -101,6 +101,20 @@ export default function ClientTypes() {
           onChange={(e) => setSearchText(e.target.value)}
           className="border p-2 rounded flex-1"
         />
+        <select
+          value={discountFilter}
+          onChange={(e) => setDiscountFilter(e.target.value)}
+          className="border p-2 rounded mb-2 md:mb-0"
+        >
+        <option value="">All Discount Rate</option>
+          {Array.from(new Set(clientTypes.map((ct) => ct.DISCOUNT_RATE)))
+            .sort((a, b) => a - b)
+            .map((rate) => (
+              <option key={rate} value={rate}>
+                {rate}%
+              </option>
+            ))}
+        </select>
         <select
           value={sortField}
           onChange={(e) => setSortField(e.target.value)}
@@ -119,20 +133,6 @@ export default function ClientTypes() {
         >
           <option value="asc">Ascending</option>
           <option value="desc">Descending</option>
-        </select>
-        <select
-          value={discountFilter}
-          onChange={(e) => setDiscountFilter(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">All Discount Rate</option>
-          {Array.from(new Set(clientTypes.map((ct) => ct.DISCOUNT_RATE)))
-            .sort((a, b) => a - b)
-            .map((rate) => (
-              <option key={rate} value={rate}>
-                {rate}%
-              </option>
-            ))}
         </select>
         <button
           onClick={() => {
@@ -153,7 +153,6 @@ export default function ClientTypes() {
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 font-bold"
               onClick={() => setShowModal(false)}
             >
-              ✕
             </button>
               <ClientTypeForm
                 editing={editing}
@@ -174,26 +173,26 @@ export default function ClientTypes() {
 
       {/* Table */}
       <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-green-600">
-            <th className="p-2 border">ID</th>
-            <th className="p-2 border">Client Type</th>
-            <th className="p-2 border">Type Name</th>
-            <th className="p-2 border">Discount Rate</th>
-            <th className="p-2 border">Remarks</th>
-            <th className="p-2 border">Action</th>
+        <thead className="bg-green-500 top-0 z-10">
+          <tr>
+            <th className="px-2 py-1 border">ID</th>
+            <th className="px-2 py-1 border">Client Type</th>
+            <th className="px-2 py-1 border">Type Name</th>
+            <th className="px-2 py-1 border">Discount Rate</th>
+            <th className="px-2 py-1 border">Remarks</th>
+            <th className="px-2 py-1 border">Action</th>
           </tr>
         </thead>
         <tbody>
           {filteredClientTypes.length > 0 ? (
             filteredClientTypes.map((ct) => (
-              <tr key={ct.CLIENT_TYPE_ID} className="hover:bg-gray-100">
-                <td className="p-2 border text-center">{ct.CLIENT_TYPE_ID}</td>
-                <td className="p-2 border">{ct.CLIENT_TYPE}</td>
-                <td className="p-2 border text-center">{ct.TYPE_NAME}</td>
-                <td className="p-2 border text-center">{ct.DISCOUNT_RATE}%</td>
-                <td className="p-2 border">{ct.REMARKS}</td>
-                <td className="p-2 border text-center space-x-2">
+              <tr key={ct.CLIENT_TYPE_ID} className="border-b hover:bg-gray-100">
+                <td className="px-2 py-1 border text-center">{ct.CLIENT_TYPE_ID}</td>
+                <td className="px-2 py-1 border">{ct.CLIENT_TYPE}</td>
+                <td className="px-2 py-1 border text-center">{ct.TYPE_NAME}</td>
+                <td className="px-2 py-1 border text-center">{ct.DISCOUNT_RATE}%</td>
+                <td className="px-2 py-1 border">{ct.REMARKS}</td>
+                <td className="px-2 py-1 border text-center space-x-2">
                   <button
                     onClick={() => handleEdit(ct)}
                     className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
