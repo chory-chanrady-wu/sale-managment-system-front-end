@@ -11,7 +11,7 @@ import ClientTypes from "./pages/ClientType";
 import ClientManagement from "./pages/ClientManagement";
 import ProductTypeManagement from "./pages/ProductTypeManagement";
 import ProductManagement from "./pages/ProductManagement";
-import InvoiceForm from "./forms/InvoiceForm";
+import InvoiceManagement from "./pages/InvoiceManagement";
 
 function RouteWithTitle({ element: Element, title }) {
   return (
@@ -42,7 +42,7 @@ export default function App() {
             <Route path="/clients" element={<RouteWithTitle element={ClientManagement} title="Clients Management" />} />
             <Route path="/product-types" element={<RouteWithTitle element={ProductTypeManagement} title="Product Types" />} />
             <Route path="/products" element={<RouteWithTitle element={ProductManagement} title="Products" />} />
-            <Route path="/invoices" element={<RouteWithTitle element={InvoiceForm} title="Invoices" />} />
+            <Route path="/invoices" element={<RouteWithTitle element={InvoiceManagement} title="Invoices" />} />
           </Routes>
         </main>
       </div>

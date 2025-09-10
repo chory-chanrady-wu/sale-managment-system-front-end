@@ -15,7 +15,7 @@ export default function Toast({ show, message, type, onClose }) {
     <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
       <div
         className={`flex items-center px-6 py-4 rounded shadow-lg text-lg font-bold ${
-          type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          type === "success" ? "bg-blue-500 text-white" : "bg-red-500 text-white"
         } animate-pop`}
       >
         {type === "success" ? (

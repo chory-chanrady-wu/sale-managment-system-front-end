@@ -45,14 +45,15 @@ export default function ClientTypes() {
   };
 
   const handleDelete = async (id) => {
-    setDeletingId(id); // disable button
+  setDeletingId(id); // disable button
     try {
-      showToast("Client Type deleted successfully", "success");
-      loadClientTypes();
+      await axios.delete(`${SERVER_URL}/api/client-types/${id}`);  // <-- call backend
+      showToast("Client Type deleted successfully", "success");    // show toast after success
+      loadClientTypes();                                           // reload data
     } catch (err) {
       console.error("Delete error:", err.response?.data || err.message);
       const msg =
-        err.response?.data?.message ||
+        err.response?.data?.error ||
         "Failed to delete client type. It may be used in other records.";
       showToast(msg, "error");
     } finally {
@@ -60,6 +61,7 @@ export default function ClientTypes() {
       setDeletingId(null);
     }
   };
+
 
   const filteredClientTypes = useMemo(() => {
     return clientTypes
