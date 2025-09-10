@@ -55,9 +55,18 @@ export default function EmployeeForm({ employee, jobs = [], onClose, onSaved }) 
   // Handle text inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [name]: value });
   };
-
+  // Validate salary on blur
+  const handleSalaryBlur = () => {
+    const selectedJob = jobs.find((job) => job.JOB_ID === Number(formData.Job_ID));
+    if (selectedJob && formData.Salary !== "") {
+      const salaryNum = Number(formData.Salary);
+      if (salaryNum < selectedJob.MIN_SALARY || salaryNum > selectedJob.MAX_SALARY) {
+        alert(`Salary must be between ${selectedJob.MIN_SALARY}$ and ${selectedJob.MAX_SALARY}$`);
+      }
+    }
+  };
   // Handle file input and preview
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -173,13 +182,16 @@ export default function EmployeeForm({ employee, jobs = [], onClose, onSaved }) 
           className="w-full border p-2 rounded"
         />
         <input
-          type="number"
+        type="number"
           name="Salary"
           placeholder="Salary"
           value={formData.Salary}
           onChange={handleChange}
+          onBlur={handleSalaryBlur}
           className="w-full border p-2 rounded"
         />
+
+
         <input
           name="Remarks"
           placeholder="Remarks"
@@ -200,7 +212,7 @@ export default function EmployeeForm({ employee, jobs = [], onClose, onSaved }) 
             <img
               src={photoPreview}
               alt="Preview"
-              className="w-full h-48 object-cover rounded"
+              className="w-20 h-20 object-cover mx-auto rounded"
             />
           )}
         </div>

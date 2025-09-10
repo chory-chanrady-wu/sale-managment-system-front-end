@@ -211,7 +211,7 @@ export default function ClientTypes() {
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="p-4 text-center">
+              <td colSpan="10" className="px-2 py-1 border text-center">
                 No client types found.
               </td>
             </tr>

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FormContainer from "../components/FormContainer";
 import EmployeeForm from "../forms/EmployeeForm";
-import Toast from "../components/Toast"; // Toast component
-import ConfirmDeleteModal from "../components/ConfirmDeleteModal"; // Confirm delete modal
+import Toast from "../components/Toast";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
 export default function EmployeesManagement() {
   const [employees, setEmployees] = useState([]);
@@ -12,7 +12,7 @@ export default function EmployeesManagement() {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [viewEmployee, setViewEmployee] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null); // track deletion
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const [searchText, setSearchText] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -20,29 +20,28 @@ export default function EmployeesManagement() {
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  const SERVER_URL = "http://localhost:4000"; 
-  const EMPLOYEE_PHOTO_PATH = "/employeephotos/";
+  const SERVER_URL = "http://localhost:4000";
 
   const showToast = (message, type = "success") => setToast({ show: true, message, type });
 
-  // Load employees
+  // Load employees from backend
   const loadEmployees = async () => {
     try {
       const res = await axios.get(`${SERVER_URL}/api/employees`);
       setEmployees(res.data);
     } catch (err) {
-      console.error("Failed to fetch employees:", err);
+      console.error(err);
       showToast("Failed to load employees", "error");
     }
   };
 
-  // Load jobs
+  // Load jobs for filter dropdown
   const loadJobs = async () => {
     try {
       const res = await axios.get(`${SERVER_URL}/api/jobs`);
       setJobs(res.data);
     } catch (err) {
-      console.error("Failed to fetch jobs:", err);
+      console.error(err);
       showToast("Failed to load jobs", "error");
     }
   };
@@ -52,39 +51,43 @@ export default function EmployeesManagement() {
     loadJobs();
   }, []);
 
-  // Debounce search
+  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(searchText), 300);
     return () => clearTimeout(handler);
   }, [searchText]);
 
+  // Handle view employee
   const handleView = async (employee) => {
     try {
       const res = await axios.get(`${SERVER_URL}/api/employees/${employee.EMPLOYEEID}`);
       setViewEmployee(res.data);
     } catch (err) {
-      console.error("Failed to fetch employee details:", err);
+      console.error(err);
       showToast("Cannot load employee details", "error");
     }
   };
 
+  // Handle delete employee
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${SERVER_URL}/api/employees/${id}`);
-      showToast("Employee deleted successfully!", "success");
+      showToast("Employee deleted successfully!");
       loadEmployees();
     } catch (err) {
-      console.error("Failed to delete employee:", err);
+      console.error(err);
       showToast("Failed to delete employee", "error");
     }
     setConfirmDeleteId(null);
   };
 
+  // Handle edit employee
   const handleEdit = (employee) => {
     setEditingEmployee(employee);
     setShowForm(true);
   };
 
+  // Filter and sort employees
   const filteredEmployees = employees
     .filter((e) => e.EMPLOYEENAME?.toLowerCase().includes(debouncedSearch.toLowerCase()))
     .filter((e) => (jobFilter ? e.JOB_ID === Number(jobFilter) : true))
@@ -102,12 +105,7 @@ export default function EmployeesManagement() {
   return (
     <FormContainer title="Employees Management">
       {/* Toast */}
-      <Toast
-        show={toast.show}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ ...toast, show: false })}
-      />
+      <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
 
       {/* Controls */}
       <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
@@ -155,7 +153,7 @@ export default function EmployeesManagement() {
           New Employee
         </button>
       </div>
-      
+
       {/* Employee Table */}
       <div className="overflow-x-auto">
         <table className="table-auto border border-black w-full min-w-max">
@@ -166,52 +164,60 @@ export default function EmployeesManagement() {
               <th className="px-2 py-1 border text-center">Gender</th>
               <th className="px-2 py-1 border text-center">Birth Date</th>
               <th className="px-2 py-1 border">Job</th>
-              <th className="px-2 py-1 border">Working Site</th>
               <th className="px-2 py-1 border">Phone</th>
               <th className="px-2 py-1 border">Address</th>
               <th className="px-2 py-1 border text-center">Salary</th>
+              <th className="px-2 py-1 border text-center">Photo</th>
               <th className="px-2 py-1 border text-center">Action</th>
             </tr>
           </thead>
           <tbody>
-            {filteredEmployees.map((e) => {
-              const jobTitle = jobs.find((j) => j.JOB_ID === e.JOB_ID)?.JOB_TITLE || "";
-              return (
-                <tr key={e.EMPLOYEEID} className="border-b hover:bg-gray-100">
-                  <td className="px-2 py-1 border text-center">{e.EMPLOYEEID}</td>
-                  <td className="px-2 py-1 border break-words">{e.EMPLOYEENAME}</td>
-                  <td className="px-2 py-1 border text-center">{e.GENDER}</td>
-                  <td className="px-2 py-1 border text-center">
-                    {e.BIRTHDATE ? new Date(e.BIRTHDATE).toLocaleDateString('en-GB') : ''}
-                  </td>
-                  <td className="px-2 py-1 border break-words">{e.JOB_ID ? jobTitle : ''}</td>
-                  <td className="px-2 py-1 border break-words">{e.WORKING_SITE}</td>
-                  <td className="px-2 py-1 border break-words">{e.PHONE}</td>
-                  <td className="px-2 py-1 border break-words">{e.ADDRESS}</td>
-                  <td className="px-2 py-1 border text-center">{e.SALARY}$</td>
-                  <td className="px-2 py-1 border text-center space-x-1">
-                    <button
-                      onClick={() => handleEdit(e)}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleView(e)}
-                      className="bg-blue-400 text-white px-2 py-1 rounded hover:bg-blue-500"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(e.EMPLOYEEID)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+            {filteredEmployees.length === 0 ? (
+              <tr>
+                <td colSpan="10" className="px-2 py-1 border text-center">No employees found.</td>
+              </tr>
+            ) : (
+              filteredEmployees.map((e) => {
+                const jobTitle = jobs.find((j) => j.JOB_ID === e.JOB_ID)?.JOB_TITLE || "";
+                return (
+                  <tr key={e.EMPLOYEEID} className="border-b hover:bg-gray-100">
+                    <td className="px-2 py-1 border text-center">{e.EMPLOYEEID}</td>
+                    <td className="px-2 py-1 border break-words">{e.EMPLOYEENAME}</td>
+                    <td className="px-2 py-1 border text-center">{e.GENDER}</td>
+                    <td className="px-2 py-1 border text-center">
+                      {e.BIRTHDATE ? new Date(e.BIRTHDATE).toLocaleDateString('en-GB') : ''}
+                    </td>
+                    <td className="px-2 py-1 border">{jobTitle}</td>
+                    <td className="px-2 py-1 border">{e.PHONE}</td>
+                    <td className="px-2 py-1 border">{e.ADDRESS}</td>
+                    <td className="px-2 py-1 border text-center">{e.SALARY}$</td>
+                    <td className="px-2 py-1 border text-center">
+                      {e.PHOTO && (
+                        <img
+                          src={`data:image/jpeg;base64,${e.PHOTO}`}
+                          alt={e.EMPLOYEENAME}
+                          className="w-20 h-20 object-cover mx-auto rounded"
+                        />
+                      )}
+                    </td>
+                    <td className="px-2 py-1 border text-center space-x-1">
+                      <button
+                        onClick={() => handleEdit(e)}
+                        className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteId(e.EMPLOYEEID)}
+                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -225,7 +231,7 @@ export default function EmployeesManagement() {
             onClose={() => setShowForm(false)}
             onSaved={() => {
               loadEmployees();
-              showToast(editingEmployee ? "Employee updated!" : "Employee created!", "success");
+              showToast(editingEmployee ? "Employee updated!" : "Employee created!");
               setShowForm(false);
             }}
           />
@@ -237,27 +243,24 @@ export default function EmployeesManagement() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-30">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md overflow-y-auto max-h-[90vh]">
             <h2 className="text-xl font-bold mb-4 text-center truncate">{viewEmployee.EMPLOYEENAME}</h2>
-
             {viewEmployee.PHOTO && (
               <img
-                src={`${SERVER_URL}${EMPLOYEE_PHOTO_PATH}${viewEmployee.PHOTO}`}
+                src={`data:image/jpeg;base64,${viewEmployee.PHOTO}`}
                 alt={viewEmployee.EMPLOYEENAME}
                 className="w-full h-60 object-cover rounded mb-4"
               />
             )}
-
             <div className="space-y-1 text-sm">
-              {viewEmployee.EMPLOYEEID && <p><strong>ID:</strong> {viewEmployee.EMPLOYEEID}</p>}
-              {viewEmployee.GENDER && <p><strong>Gender:</strong> {viewEmployee.GENDER}</p>}
-              {viewEmployee.BIRTHDATE && <p><strong>Birth Date:</strong> {viewEmployee.BIRTHDATE.split("T")[0]}</p>}
-              {viewEmployee.JOB_ID && <p><strong>Job:</strong> {jobs.find((j) => j.JOB_ID === viewEmployee.JOB_ID)?.JOB_TITLE || ""}</p>}
-              {viewEmployee.WORKING_SITE && <p><strong>Site:</strong> {viewEmployee.WORKING_SITE}</p>}
-              {viewEmployee.PHONE && <p><strong>Phone:</strong> {viewEmployee.PHONE}</p>}
-              {viewEmployee.ADDRESS && <p><strong>Address:</strong> {viewEmployee.ADDRESS}</p>}
-              {viewEmployee.SALARY && <p><strong>Salary:</strong> {viewEmployee.SALARY}$</p>}
-              {viewEmployee.REMARKS && <p><strong>Remarks:</strong> {viewEmployee.REMARKS}</p>}
+              <p><strong>ID:</strong> {viewEmployee.EMPLOYEEID}</p>
+              <p><strong>Gender:</strong> {viewEmployee.GENDER}</p>
+              <p><strong>Birth Date:</strong> {viewEmployee.BIRTHDATE?.split("T")[0]}</p>
+              <p><strong>Job:</strong> {jobs.find((j) => j.JOB_ID === viewEmployee.JOB_ID)?.JOB_TITLE || ""}</p>
+              <p><strong>Phone:</strong> {viewEmployee.PHONE}</p>
+              <p><strong>Address:</strong> {viewEmployee.ADDRESS}</p>
+              <p><strong>Salary:</strong> {viewEmployee.SALARY}$</p>
+              <p><strong>Remarks:</strong> {viewEmployee.REMARKS}</p>
+              <p><strong>Working Site:</strong> {viewEmployee.WORKING_SITE}</p>
             </div>
-
             <div className="flex justify-center mt-4">
               <button
                 onClick={() => setViewEmployee(null)}
@@ -277,7 +280,6 @@ export default function EmployeesManagement() {
         onConfirm={() => handleDelete(confirmDeleteId)}
         onCancel={() => setConfirmDeleteId(null)}
       />
-
     </FormContainer>
   );
 }

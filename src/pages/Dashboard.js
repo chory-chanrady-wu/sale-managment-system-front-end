@@ -108,12 +108,12 @@ export default function Dashboard() {
   if (loading) return <p className="text-center mt-10">Loading dashboard...</p>;
 
   const cards = [
-    { label: "Jobs", value: counts.jobs, color: "bg-blue-100", route: "/jobs" },
-    { label: "Employees", value: counts.employees, color: "bg-green-100", route: "/employees" },
-    { label: "Clients", value: counts.clients, color: "bg-yellow-100", route: "/clients" },
-    { label: "Products", value: counts.products, color: "bg-purple-100", route: "/products" },
-    { label: "Invoices", value: counts.invoices, color: "bg-red-100", route: "/invoices" },
-    { label: "Product Types", value: counts.productTypes, color: "bg-pink-100", route: "/product-types" }
+    { label: "Jobs", value: counts.jobs, color: "bg-blue-300", route: "/jobs" },
+    { label: "Employees", value: counts.employees, color: "bg-green-300", route: "/employees" },
+    { label: "Clients", value: counts.clients, color: "bg-yellow-300", route: "/clients" },
+    { label: "Products", value: counts.products, color: "bg-purple-300", route: "/products" },
+    { label: "Invoices", value: counts.invoices, color: "bg-red-300", route: "/invoices" },
+    { label: "Product Types", value: counts.productTypes, color: "bg-pink-300", route: "/product-types" }
   ];
 
   return (

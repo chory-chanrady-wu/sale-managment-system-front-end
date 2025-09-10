@@ -165,6 +165,13 @@ export default function ProductManagement() {
             </tr>
           </thead>
           <tbody>
+            {filteredProducts.length === 0 && (
+              <tr>
+                <td colSpan="10" className="px-2 py-1 border text-center">
+                  No products found.
+                </td>
+              </tr>
+            )}
             {filteredProducts.map((p) => (
               <tr key={p.PRODUCT_NO} className="border-b hover:bg-gray-100">
                 <td className="px-2 py-1 border text-center">{p.PRODUCT_NO}</td>
@@ -180,7 +187,7 @@ export default function ProductManagement() {
                     <img
                       src={`data:image/jpeg;base64,${p.PHOTO}`}
                       alt={p.PRODUCTNAME}
-                      className="w-16 h-16 object-cover mx-auto rounded"
+                      className="w-20 h-20 object-cover mx-auto rounded"
                     />
                   )}
                 </td>

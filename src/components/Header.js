@@ -6,9 +6,9 @@ export default function Header() {
     `px-3 py-2 rounded hover:bg-blue-100 ${isActive ? "bg-blue-500 text-white" : "text-gray-700"}`;
 
   return (
-    <header className="bg-white shadow p-4 flex justify-between items-center">
+    <header className="bg-green-500 shadow p-4 flex justify-between items-center">
       <h1 className="text-2xl font-bold">Sale Management System</h1>
-      <nav className="flex space-x-2">
+      <nav className="font-black flex space-x-2">
         <NavLink to="/dashboard" className={linkClasses}>Dashboard</NavLink>
         <NavLink to="/jobs" className={linkClasses}>Jobs</NavLink>
         <NavLink to="/employees" className={linkClasses}>Employees</NavLink>

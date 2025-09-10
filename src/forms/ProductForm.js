@@ -170,7 +170,7 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
             <img
               src={photoPreview}
               alt="Preview"
-              className="w-full h-48 object-cover rounded"
+              className="w-20 h-20 object-cover mx-auto rounded"
             />
           )}
         </div>

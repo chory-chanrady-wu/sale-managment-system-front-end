@@ -182,6 +182,13 @@ export default function ClientManagement() {
             </tr>
           </thead>
           <tbody>
+            {filteredClients.length === 0 && (
+              <tr>
+                <td colSpan="10" className="px-2 py-1 border text-center">
+                  No clients found.
+                </td>
+              </tr>
+            )}
             {filteredClients.map((client) => (
               <tr key={client.CLIENT_NO} className="border-b hover:bg-gray-100">
                 <td className="text-center border px-2 py-1">{client.CLIENT_NO}</td>

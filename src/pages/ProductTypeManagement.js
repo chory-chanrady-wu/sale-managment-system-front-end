@@ -178,7 +178,11 @@ export default function ProductTypeManagement() {
               </td>
             </tr>
           )) : (
-            <tr></tr>
+            <tr>
+              <td colSpan="10" className="px-2 py-1 border text-center">
+                  No products type found.
+                </td>
+            </tr>
           )}
         </tbody>
       </table>

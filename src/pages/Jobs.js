@@ -148,10 +148,6 @@ export default function JobsManagement() {
           New Job
         </button>
       </div>
-
-      {loading ? (
-        <p>Loading jobs...</p>
-      ) : (
         <table className="min-w-full border border-black">
           <thead className="bg-green-500 top-0 z-10">
             <tr>
@@ -164,6 +160,13 @@ export default function JobsManagement() {
             </tr>
           </thead>
           <tbody>
+            {filteredJobs.length === 0 && (
+              <tr>
+                <td colSpan="10" className="px-2 py-1 border text-center">
+                  No jobs found.
+                </td>
+              </tr>
+            )}
             {filteredJobs.map((j) => (
               <tr key={j.JOB_ID} className="border-b hover:bg-gray-100">
                 <td className="px-2 py-1 text-center border">{j.JOB_ID}</td>
@@ -190,7 +193,6 @@ export default function JobsManagement() {
             ))}
           </tbody>
         </table>
-      )}
 
       {/* Jobs Form Modal */}
       {showForm && (
