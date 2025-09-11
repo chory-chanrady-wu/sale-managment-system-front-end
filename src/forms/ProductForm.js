@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Toast from "../components/Toast";
+import Select from "react-select";
 
 export default function ProductForm({ product, productTypes = [], onClose, onSaved }) {
   const [formData, setFormData] = useState({
@@ -13,11 +14,10 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
     QTY_ON_HAND: "",
   });
 
+  const [selectedProductType, setSelectedProductType] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-
-  const showToast = (msg, type = "success") => setToast({ show: true, message: msg, type });
 
   useEffect(() => {
     if (product) {
@@ -30,9 +30,19 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
         SELL_PRICE: product.SELL_PRICE || "",
         QTY_ON_HAND: product.QTY_ON_HAND || "",
       });
+
+      // Prefill react-select with the full option object
+      if (product.PRODUCTTYPE_OBJ) setSelectedProductType(product.PRODUCTTYPE_OBJ);
+
+      // Prefill photo
       setPhotoPreview(product.PHOTO || "");
     }
   }, [product]);
+
+  const productTypeOptions = productTypes.map((pt) => ({
+    value: pt.PRODUCTTYPE_ID,
+    label: pt.PRODUCTTYPE_NAME,
+  }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,12 +59,18 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
     }
   };
 
+  const showToast = (msg, type = "success") =>
+    setToast({ show: true, message: msg, type });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) data.append(key, value);
-    });
+    Object.entries({ ...formData, PRODUCTTYPE: selectedProductType?.value || "" }).forEach(
+      ([key, value]) => {
+        if (value !== null && value !== undefined) data.append(key, value);
+      }
+    );
     if (photoFile) data.append("PHOTO", photoFile);
 
     try {
@@ -76,7 +92,7 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
       onSaved();
       onClose();
     } catch (err) {
-      console.error("Save product error:", err.response?.data || err);
+      console.error(err);
       showToast(err.response?.data?.error || "Failed to save product", "error");
     }
   };
@@ -89,11 +105,9 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
         type={toast.type}
         onClose={() => setToast({ ...toast, show: false })}
       />
-
       <h2 className="text-xl font-bold mb-4 text-center">
         {product ? "Edit Product" : "New Product"}
       </h2>
-
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           name="PRODUCTNAME"
@@ -104,21 +118,15 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
           required
         />
 
-        <select
-          name="PRODUCTTYPE"
-          value={formData.PRODUCTTYPE}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Select Product Type</option>
-          {productTypes.map((pt) => (
-            <option key={pt.PRODUCTTYPE_ID} value={pt.PRODUCTTYPE_ID}>
-              {pt.PRODUCTTYPE_NAME}
-            </option>
-          ))}
-        </select>
-
+        <Select
+          options={productTypeOptions}
+          value={selectedProductType}
+          onChange={(option) => setSelectedProductType(option)}
+          placeholder="--ជ្រើសរើសប្រភេទទំនិញ / Select Product Type--"
+          isClearable
+          noOptionsMessage={() => "មិនមានក្នុងបញ្ជី / Not in list"}
+        />
+        
         <input
           name="UNIT_MEASURE"
           placeholder="Unit Measure"
@@ -126,6 +134,7 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
         <input
           type="number"
           name="REORDER_LEVEL"
@@ -134,6 +143,7 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
         <input
           type="number"
           name="COST_PRICE"
@@ -142,6 +152,7 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
         <input
           type="number"
           name="SELL_PRICE"
@@ -150,6 +161,7 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
           onChange={handleChange}
           className="w-full border p-2 rounded"
         />
+
         <input
           type="number"
           name="QTY_ON_HAND"
@@ -159,21 +171,19 @@ export default function ProductForm({ product, productTypes = [], onClose, onSav
           className="w-full border p-2 rounded"
         />
 
-        <div>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="w-full border p-2 rounded mb-2"
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full border p-2 rounded mb-2"
+        />
+        {photoPreview && (
+          <img
+            src={photoPreview}
+            alt="Preview"
+            className="w-20 h-20 object-cover mx-auto rounded"
           />
-          {photoPreview && (
-            <img
-              src={photoPreview}
-              alt="Preview"
-              className="w-20 h-20 object-cover mx-auto rounded"
-            />
-          )}
-        </div>
+        )}
 
         <div className="flex justify-end space-x-2">
           <button

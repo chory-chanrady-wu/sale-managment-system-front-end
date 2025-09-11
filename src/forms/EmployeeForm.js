@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Select from "react-select"
 
 export default function EmployeeForm({ employee, jobs = [], onClose, onSaved }) {
   const [formData, setFormData] = useState({
@@ -45,12 +46,18 @@ export default function EmployeeForm({ employee, jobs = [], onClose, onSaved }) 
         Remarks: employee.REMARKS || "",
         Working_Site: employee.WORKING_SITE || "",
       });
-
+      
       // If backend returns base64 Photo
-      setPhotoPreview(employee.Photo || "");
+      setPhotoPreview(employee.PHOTO || "");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [employee]);
+
+  //Jobs Option
+  const jobsOptions = jobs.map(j => ({
+    value: j.JOB_ID,
+    label: j.JOB_TITLE
+  }));
 
   // Handle text inputs
   const handleChange = (e) => {
@@ -152,20 +159,17 @@ export default function EmployeeForm({ employee, jobs = [], onClose, onSaved }) 
           className="w-full border p-2 rounded"
           required
         />  
-        <select
-          name="Job_ID"
-          value={formData.Job_ID}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-          required
-        >
-          <option value="">Select Job</option>
-          {jobs.map((job) => (
-            <option key={job.JOB_ID} value={job.JOB_ID}>
-              {job.JOB_TITLE}
-            </option>
-          ))}
-        </select>
+        <div className="mb-4">
+          <Select
+            options={jobsOptions}
+            value={jobsOptions.find(option => option.value === Number(formData.Job_ID)) || null}
+            onChange={(selected) =>
+              setFormData({ ...formData, Job_ID: selected?.value || "" })
+            }
+            placeholder="--ជ្រើសរើសតួនាទី / Select Jos Title--"
+            isClearable
+          />
+        </div>
 
         <input
           name="Address"

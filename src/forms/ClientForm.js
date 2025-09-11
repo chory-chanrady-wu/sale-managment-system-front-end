@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import CitySelect from "../components/CitySelect";
+import Select from "react-select"
 
 export default function ClientForm({ editing, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
@@ -64,11 +66,18 @@ export default function ClientForm({ editing, onSuccess, onCancel }) {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  {/* Clients Type Option*/}
+  const clienttypeOptions = clientTypes.map(ct => ({
+    value: ct.CLIENT_TYPE_ID,
+    label: ct.CLIENT_TYPE
+  }));
+
   // Validate form fields
   const validate = () => {
     const newErrors = {};
     if (!formData.CLIENTNAME.trim()) newErrors.CLIENTNAME = "Client Name is required";
     if (!formData.CLIENT_TYPE_ID) newErrors.CLIENT_TYPE_ID = "Client Type is required";
+      if (!formData.CITY) newErrors.CITY = "City is required";
     if (formData.EMAIL && !formData.EMAIL.includes("@")) newErrors.EMAIL = "Invalid email";
     return newErrors;
   };
@@ -181,39 +190,11 @@ export default function ClientForm({ editing, onSuccess, onCancel }) {
 
       {/* City/Province */}
       <div className="mb-4">
-        <select
-          name="CITY"
+        <CitySelect
           value={formData.CITY}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        >
-          <option value="">-- Select City --</option>
-          <option value="Banteay Meanchey">បន្ទាយមានជ័យ (Banteay Meanchey)</option>
-          <option value="Battambang">បាត់ដំបង (Battambang)</option>
-          <option value="Kampong Cham">កំពង់ចាម (Kampong Cham)</option>
-          <option value="Kampong Chhnang">កំពង់ឆ្នាំង (Kampong Chhnang)</option>
-          <option value="Kampong Speu">កំពង់ស្ពឺ (Kampong Speu)</option>
-          <option value="Kampong Thom">កំពង់ធំ (Kampong Thom)</option>
-          <option value="Kampot">កំពត (Kampot)</option>
-          <option value="Kandal">កណ្តាល (Kandal)</option>
-          <option value="Kep">កែប (Kep)</option>
-          <option value="Koh Kong">កោះកុង (Koh Kong)</option>
-          <option value="Kratié">ក្រចេះ (Kratié)</option>
-          <option value="Mondulkiri">មណ្ឌលគិរី (Mondulkiri)</option>
-          <option value="Oddar Meanchey">ឧត្ដរមានជ័យ (Oddar Meanchey)</option>
-          <option value="Pailin">ប៉ៃលិន (Pailin)</option>
-          <option value="Phnom Penh">ភ្នំពេញ (Phnom Penh)</option>
-          <option value="Preah Vihear">ព្រះវិហារ (Preah Vihear)</option>
-          <option value="Prey Veng">ព្រៃវែង (Prey Veng)</option>
-          <option value="Pursat">ពោធិ៍សាត់ (Pursat)</option>
-          <option value="Ratanakiri">រតនគិរី (Ratanakiri)</option>
-          <option value="Siem Reap">សៀមរាប (Siem Reap)</option>
-          <option value="Preah Sihanouk">ព្រះសីហនុ (Preah Sihanouk)</option>
-          <option value="Stung Treng">ស្ទឹងត្រែង (Stung Treng)</option>
-          <option value="Svay Rieng">ស្វាយរៀង (Svay Rieng)</option>
-          <option value="Takeo">តាកែវ (Takeo)</option>
-          <option value="Tbong Khmum">ត្បូងឃ្មុំ (Tbong Khmum)</option>
-        </select>
+          onChange={(val) => setFormData({ ...formData, CITY: val })}
+        />
+        {errors.CITY && <p className="text-red-500 text-sm mt-1">{errors.CITY}</p>}
       </div>
 
       {/* Address */}
@@ -229,20 +210,16 @@ export default function ClientForm({ editing, onSuccess, onCancel }) {
 
       {/* Client Type */}
       <div className="mb-4">
-        <select
-          name="CLIENT_TYPE_ID"
-          value={formData.CLIENT_TYPE_ID}
-          onChange={handleChange}
-          className={`w-full p-2 border rounded ${errors.CLIENT_TYPE_ID ? "border-red-500" : ""}`}
-        >
-          <option value="">-- Select Client Type --</option>
-          {clientTypes.map((ct) => (
-            <option key={ct.CLIENT_TYPE_ID} value={ct.CLIENT_TYPE_ID}>
-              {ct.CLIENT_TYPE} - Discount {ct.DISCOUNT_RATE}%
-            </option>
-          ))}
-        </select>
-        {errors.CLIENT_TYPE_ID && <p className="text-red-500 text-sm mt-1">{errors.CLIENT_TYPE_ID}</p>}
+        <Select
+          options={clienttypeOptions}
+          value={clienttypeOptions.find(option => option.value === formData.CLIENT_TYPE_ID) || null}
+          onChange={(selected) =>
+            setFormData({ ...formData, CLIENT_TYPE_ID: selected?.value || "" })
+          }
+          placeholder="--ជ្រើសរើសប្រភេទអតិថិជន / Select Client Type--"
+          isClearable
+          noOptionsMessage={() => "មិនមានក្នុងបញ្ជី / Not in list"}
+        />
       </div>
 
       {/* Buttons */}

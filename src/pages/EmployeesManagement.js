@@ -49,24 +49,13 @@ export default function EmployeesManagement() {
   useEffect(() => {
     loadEmployees();
     loadJobs();
-  }, []);
+  },[]);
 
   // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(searchText), 300);
     return () => clearTimeout(handler);
   }, [searchText]);
-
-  // Handle view employee
-  const handleView = async (employee) => {
-    try {
-      const res = await axios.get(`${SERVER_URL}/api/employees/${employee.EMPLOYEEID}`);
-      setViewEmployee(res.data);
-    } catch (err) {
-      console.error(err);
-      showToast("Cannot load employee details", "error");
-    }
-  };
 
   // Handle delete employee
   const handleDelete = async (id) => {

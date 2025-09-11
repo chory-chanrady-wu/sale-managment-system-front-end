@@ -48,7 +48,8 @@ export default function ProductManagement() {
   useEffect(() => {
     loadProducts();
     loadProductTypes();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   // Debounce search
   useEffect(() => {
@@ -56,11 +57,19 @@ export default function ProductManagement() {
     return () => clearTimeout(handler);
   }, [searchText]);
 
-  const handleEdit = (product) => {
-    setEditingProduct(product);
+   const handleEdit = (product) => {
+  // Map PRODUCTTYPE id to the corresponding option object for react-select
+    const selectedProductType = productTypes.find(
+    (pt) => pt.PRODUCTTYPE_ID === product.PRODUCTTYPE
+    );
+    setEditingProduct({
+    ...product,
+      PRODUCTTYPE_OBJ: selectedProductType || null, // send option object to ProductForm
+      UNIT_MEASURE: product.UNIT_MEASURE || "", // ensure it's not null
+      PHOTO: product.PHOTO ? `data:image/jpeg;base64,${product.PHOTO}` : "", // prefill photo
+    });
     setShowForm(true);
   };
-
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${SERVER_URL}/api/products/${id}`);
