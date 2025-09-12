@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+//import React from "react";
+import React, { useState, useEffect} from "react";
 import Select from "react-select";
 
 export default function InvoiceForm({
@@ -22,10 +23,18 @@ export default function InvoiceForm({
     Invoice_status: "",
     InvoiceMemo: "",
   });
+  const getTotal = () => {
+    return invoiceDetails.reduce((sum, d) => sum + d.QTY * d.PRICE, 0);
+  };
+
+  const getDiscountedTotal = () => {
+    const client = clients.find((c) => c.CLIENT_NO === formData.Client_no);
+    const discount = client?.DISCOUNT || 0; // default 0 if no discount
+    const subtotal = getTotal();
+    return subtotal - (subtotal * discount) / 100;
+  };
 
   const [invoiceDetails, setInvoiceDetails] = useState([]);
-
-  const printRef = useRef(); // for print
 
   useEffect(() => {
     if (invoice) {
@@ -38,6 +47,7 @@ export default function InvoiceForm({
       });
       setInvoiceDetails(invoice.details || []);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice]);
 
   const handleChange = (e) => {
@@ -97,19 +107,6 @@ export default function InvoiceForm({
     }
   };
 
-  const getTotal = () => {
-    return invoiceDetails.reduce((sum, d) => sum + d.QTY * d.PRICE, 0);
-  };
-
-  const handlePrint = () => {
-    const printContents = printRef.current.innerHTML;
-    const originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
       <h2 className="text-xl font-bold mb-4 text-center">
@@ -167,69 +164,71 @@ export default function InvoiceForm({
           className="w-full border p-2 rounded"
         />
 
-        <h3 className="font-bold mt-4">Invoice Details</h3>
-        {invoiceDetails.map((d, index) => (
-          <div key={index} className="flex space-x-2 items-center mb-2">
-            <div className="flex-1">
-              <Select
-                options={productsOptions}
-                value={productsOptions.find((opt) => opt.value === d.PRODUCT_NO) || null}
-                onChange={(opt) => {
+        <h3 className="font-bold text-xl mt-4 text-center">Invoice Details</h3>
+        <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-2">
+          {invoiceDetails.map((d, index) => (
+            <div key={index} className="flex space-x-2 items-center mb-2">
+              <div className="flex-1">
+                <Select
+                  options={productsOptions}
+                  value={productsOptions.find((opt) => opt.value === d.PRODUCT_NO) || null}
+                  onChange={(opt) => {
+                    setInvoiceDetails((details) => {
+                      const updated = [...details];
+                      updated[index] = {
+                        ...updated[index],
+                        PRODUCT_NO: opt?.value || "",
+                        PRICE: opt?.price || 0,
+                      };
+                      return updated;
+                    });
+                  }}
+                  placeholder="Select Product"
+                  isClearable
+                />
+              </div>
+
+              <input
+                type="number"
+                min="1"
+                value={d.QTY || 1}
+                onChange={(e) => {
+                  const qty = Number(e.target.value) || 1;
                   setInvoiceDetails((details) => {
                     const updated = [...details];
-                    updated[index] = {
-                      ...updated[index],
-                      PRODUCT_NO: opt?.value || "",
-                      PRICE: opt?.price || 0,
-                    };
+                    updated[index] = { ...updated[index], QTY: qty };
                     return updated;
                   });
                 }}
-                placeholder="Select Product"
-                isClearable
+                className="w-20 border p-1 rounded"
               />
+
+              <input
+                type="number"
+                value={d.PRICE || 0}
+                onChange={(e) => {
+                  const price = Number(e.target.value) || 0;
+                  setInvoiceDetails((details) => {
+                    const updated = [...details];
+                    updated[index] = { ...updated[index], PRICE: price };
+                    return updated;
+                  });
+                }}
+                className="w-24 border p-1 rounded"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setInvoiceDetails((details) => details.filter((_, i) => i !== index))
+                }
+                className="text-red-500"
+              >
+                ✕
+              </button>
             </div>
-
-            <input
-              type="number"
-              min="1"
-              value={d.QTY || 1}
-              onChange={(e) => {
-                const qty = Number(e.target.value) || 1;
-                setInvoiceDetails((details) => {
-                  const updated = [...details];
-                  updated[index] = { ...updated[index], QTY: qty };
-                  return updated;
-                });
-              }}
-              className="w-20 border p-1 rounded"
-            />
-
-            <input
-              type="number"
-              value={d.PRICE || 0}
-              onChange={(e) => {
-                const price = Number(e.target.value) || 0;
-                setInvoiceDetails((details) => {
-                  const updated = [...details];
-                  updated[index] = { ...updated[index], PRICE: price };
-                  return updated;
-                });
-              }}
-              className="w-24 border p-1 rounded"
-            />
-
-            <button
-              type="button"
-              onClick={() =>
-                setInvoiceDetails((details) => details.filter((_, i) => i !== index))
-              }
-              className="text-red-500"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
+          ))}
+        </div>
 
         <button
           type="button"
@@ -241,7 +240,16 @@ export default function InvoiceForm({
           + Add Product
         </button>
 
-        <div className="mt-4 font-bold text-right">Total: ${getTotal()}</div>
+        <div className="mt-4 text-right space-y-1">
+          <div>Subtotal: ${getTotal().toFixed(2)}</div>
+          <div>
+            Discount ({clients.find(c => c.CLIENT_NO === formData.Client_no)?.DISCOUNT || 0}%):
+            -${(getTotal() - getDiscountedTotal()).toFixed(2)}
+          </div>
+          <div className="font-bold text-lg">
+            Grand Total: ${getDiscountedTotal().toFixed(2)}
+          </div>
+        </div>
 
         <div className="flex justify-end space-x-2 mt-4">
           <button
@@ -252,13 +260,6 @@ export default function InvoiceForm({
             Cancel
           </button>
           <button
-            type="button"
-            onClick={handlePrint}
-            className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-          >
-            Print
-          </button>
-          <button
             type="submit"
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
@@ -266,49 +267,6 @@ export default function InvoiceForm({
           </button>
         </div>
       </form>
-
-      {/* Hidden div for printing */}
-      <div className="hidden" ref={printRef}>
-        <h2>Invoice</h2>
-        <div>Date: {formData.Invoice_date}</div>
-        <div>Client: {clients.find((c) => c.CLIENT_NO === formData.Client_no)?.CLIENTNAME}</div>
-        <div>
-          Employee: {employees.find((e) => e.EMPLOYEEID === formData.EmployeeID)?.EMPLOYEENAME}
-        </div>
-        <div>Status: {formData.Invoice_status}</div>
-        <div>Memo: {formData.InvoiceMemo}</div>
-
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
-          <thead>
-            <tr>
-              <th style={{ border: "1px solid #000" }}>Product</th>
-              <th style={{ border: "1px solid #000" }}>Qty</th>
-              <th style={{ border: "1px solid #000" }}>Price</th>
-              <th style={{ border: "1px solid #000" }}>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoiceDetails.map((d, i) => (
-              <tr key={i}>
-                <td style={{ border: "1px solid #000" }}>
-                  {products.find((p) => p.PRODUCT_NO === d.PRODUCT_NO)?.PRODUCTNAME}
-                </td>
-                <td style={{ border: "1px solid #000", textAlign: "center" }}>{d.QTY}</td>
-                <td style={{ border: "1px solid #000", textAlign: "right" }}>${d.PRICE}</td>
-                <td style={{ border: "1px solid #000", textAlign: "right" }}>${d.QTY * d.PRICE}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan="3" style={{ textAlign: "right", fontWeight: "bold" }}>
-                Grand Total:
-              </td>
-              <td style={{ textAlign: "right", fontWeight: "bold" }}>${getTotal()}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
     </div>
   );
 }

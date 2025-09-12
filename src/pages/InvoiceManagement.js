@@ -4,6 +4,7 @@ import FormContainer from "../components/FormContainer";
 import InvoiceForm from "../forms/InvoiceForm";
 import Toast from "../components/Toast";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import KHQR from "../components/assets/QR.jpg"
 
 export default function InvoiceManagement() {
   const [invoices, setInvoices] = useState([]);
@@ -23,25 +24,46 @@ export default function InvoiceManagement() {
 
   const SERVER_URL = "http://localhost:4000";
   const printRef = useRef();
-
+  
   const showToast = (message, type = "success") => setToast({ show: true, message, type });
   // Add this inside InvoiceManagement, near handlePrint
   const handlePrintInvoice = (invoice) => {
-    // set the invoice to editingInvoice so printRef can access it
     setEditingInvoice(invoice);
 
-    // small timeout to ensure React updates the state before printing
     setTimeout(() => {
       if (printRef.current) {
+        const originalTitle = document.title;
+
+        // Use invoice date
+        let dateStr = "UnknownDate";
+        if (invoice?.INVOICE_DATE) {
+          const d = new Date(invoice.INVOICE_DATE);
+          // optional: add 1 day if needed
+          d.setDate(d.getDate());
+
+          const day = String(d.getDate()).padStart(2, "0");       // ensures 01, 02, ... 31
+          const month = String(d.getMonth() + 1).padStart(2, "0"); // months are 0-based in JS
+          const year = d.getFullYear();
+
+          dateStr = `${day}-${month}-${year}`;
+        }
+        
+        const invoiceNo = invoice?.INVOICENO || "Invoice";
+        document.title = `Invoice-${invoiceNo} ${dateStr}`;
+
         const printContents = printRef.current.innerHTML;
         const originalContents = document.body.innerHTML;
         document.body.innerHTML = printContents;
         window.print();
         document.body.innerHTML = originalContents;
-        window.location.reload(); // reload to restore React
+
+        document.title = originalTitle;
+        window.location.reload();
       }
     }, 100);
   };
+
+
   const loadInvoices = async () => {
     try {
       const res = await axios.get(`${SERVER_URL}/api/invoices`);
@@ -99,10 +121,6 @@ export default function InvoiceManagement() {
     setShowForm(true);
   };
 
-  const handleView = (invoice) => {
-    setViewInvoice(invoice);
-  };
-
   const handlePrint = () => {
     if (!printRef.current) return;
     const printContents = printRef.current.innerHTML;
@@ -118,6 +136,7 @@ export default function InvoiceManagement() {
     loadClients();
     loadEmployees();
     loadProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Debounce search input
@@ -227,7 +246,19 @@ export default function InvoiceManagement() {
                 return (
                   <tr key={i.INVOICENO} className="border-b hover:bg-gray-100">
                     <td className="px-2 py-1 border text-center">{i.INVOICENO}</td>
-                    <td className="px-2 py-1 border text-center">{i.INVOICE_DATE?.split("T")[0]}</td>
+                    <td className="px-2 py-1 border text-center">
+                      {i.INVOICE_DATE
+                        ? (() => {
+                            const d = new Date(i.INVOICE_DATE);
+                            d.setDate(d.getDate()); // add 1 day
+                            const day = String(d.getDate()).padStart(2, "0");
+                            const month = String(d.getMonth() + 1).padStart(2, "0");
+                            const year = d.getFullYear();
+                            return `${day}/${month}/${year}`;
+                          })()
+                        : ""
+                      }
+                    </td>
                     <td className="px-2 py-1 border">{clientName}</td>
                     <td className="px-2 py-1 border">{employeeName}</td>
                     <td className="px-2 py-1 border text-center">{i.INVOICE_STATUS}</td>
@@ -264,7 +295,7 @@ export default function InvoiceManagement() {
 
       {/* Edit / New Invoice Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-2 z-20">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-2 z-20 overflow-y-auto">
           <InvoiceForm
             invoice={editingInvoice}
             clients={clients}
@@ -295,18 +326,47 @@ export default function InvoiceManagement() {
           />
         </div>
       )}
-      {/*print*/}
+      {/* print */}
       <div className="hidden" ref={printRef}>
         {editingInvoice && (
           <>
-            <h2>Invoice</h2>
-            <div>Date: {editingInvoice.INVOICE_DATE?.split("T")[0]}</div>
-            <div>Client: {clients.find(c => c.CLIENT_NO === editingInvoice.CLIENT_NO)?.CLIENTNAME}</div>
-            <div>Employee: {employees.find(e => e.EMPLOYEEID === editingInvoice.EMPLOYEEID)?.EMPLOYEENAME}</div>
+            <h2 className="text-center text-blue-600 font-bold text-3xl">Tax Invoice Details</h2>
+            <h2>Invoice Number: {editingInvoice.INVOICENO}</h2>
+            <div>
+              Date: {(() => {
+                if (!editingInvoice?.INVOICE_DATE) return "Unknown";
+                const d = new Date(editingInvoice.INVOICE_DATE);
+                d.setUTCDate(d.getUTCDate() + 1); // add 1 day
+                const day = String(d.getUTCDate()).padStart(2, "0");
+                const month = String(d.getUTCMonth() + 1).padStart(2, "0"); // month is 0-based
+                const year = d.getUTCFullYear();
+                return `${day}-${month}-${year}`;
+              })()}
+            </div>
+            <div>
+              Client:{" "}
+              {clients.find(c => c.CLIENT_NO === editingInvoice.CLIENT_NO)?.CLIENTNAME} / 
+              {clients.find(c => c.CLIENT_NO === editingInvoice.CLIENT_NO)?.PHONE}
+            </div>
+            <div>
+              Location:{" "}
+              {clients.find(c => c.CLIENT_NO === editingInvoice.CLIENT_NO)?.ADDRESS},
+              {clients.find(c => c.CLIENT_NO === editingInvoice.CLIENT_NO)?.CITY}
+            </div>
+            <div>
+              Employee:{" "}
+              {employees.find(e => e.EMPLOYEEID === editingInvoice.EMPLOYEEID)?.EMPLOYEENAME}
+            </div>
             <div>Status: {editingInvoice.INVOICE_STATUS}</div>
             <div>Memo: {editingInvoice.INVOICEMEMO}</div>
 
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                marginTop: "10px",
+              }}
+            >
               <thead>
                 <tr>
                   <th style={{ border: "1px solid #000" }}>Product</th>
@@ -321,21 +381,66 @@ export default function InvoiceManagement() {
                     <td style={{ border: "1px solid #000" }}>
                       {products.find(p => p.PRODUCT_NO === d.PRODUCT_NO)?.PRODUCTNAME}
                     </td>
-                    <td style={{ border: "1px solid #000", textAlign: "center" }}>{d.QTY}</td>
-                    <td style={{ border: "1px solid #000", textAlign: "right" }}>${d.PRICE}</td>
-                    <td style={{ border: "1px solid #000", textAlign: "right" }}>${d.QTY * d.PRICE}</td>
+                    <td style={{ border: "1px solid #000", textAlign: "center" }}>
+                      {d.QTY}
+                    </td>
+                    <td style={{ border: "1px solid #000", textAlign: "center" }}>
+                      ${d.PRICE}
+                    </td>
+                    <td style={{ border: "1px solid #000", textAlign: "center" }}>
+                      ${d.QTY * d.PRICE}
+                    </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr>
-                  <td colSpan="3" style={{ textAlign: "right", fontWeight: "bold" }}>Grand Total:</td>
-                  <td style={{ textAlign: "right", fontWeight: "bold" }}>
-                    ${editingInvoice.details?.reduce((sum, d) => sum + d.QTY * d.PRICE, 0)}
-                  </td>
-                </tr>
+                {(() => {
+                  const subtotal = editingInvoice.details?.reduce(
+                    (sum, d) => sum + d.QTY * d.PRICE,
+                    0
+                  );
+                  const client = clients.find(
+                    c => c.CLIENT_NO === editingInvoice.CLIENT_NO
+                  );
+                  const discount = client?.DISCOUNT || 0;
+                  const discountAmount = (subtotal * discount) / 100;
+                  const grandTotal = subtotal - discountAmount;
+
+                  return (
+                    <>
+                      <tr>
+                        <td colSpan="3" style={{ textAlign: "right", fontWeight: "bold" }}>
+                          Subtotal:
+                        </td>
+                        <td style={{ textAlign: "right" }}>{subtotal.toFixed(2)}$</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" style={{ textAlign: "right", fontWeight: "bold" }}>
+                          Discount ({discount}%):
+                        </td>
+                        <td style={{ textAlign: "right" }}>- {discountAmount.toFixed(2)}$</td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3" style={{ textAlign: "right", fontWeight: "bold" }}>
+                          Grand Total:
+                        </td>
+                        <td style={{ textAlign: "right", fontWeight: "bold" }}>
+                          {grandTotal.toFixed(2)}$
+                        </td>
+                      </tr>
+                    </>
+                  );
+                })()}
               </tfoot>
             </table>
+            <div className="mt-4 text-left">
+              <h3 className="font-bold mb-2">KHQR</h3>
+              <img
+                src={KHQR}
+                alt="Bank QR"
+                className="inline-block w-40 h-50 border p-2 rounded shadow"
+              />
+            </div>
           </>
         )}
       </div>

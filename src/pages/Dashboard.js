@@ -34,70 +34,72 @@ export default function Dashboard() {
     const loadData = async () => {
       setLoading(true);
 
-      const jobs = (await fetchJobs()).data;
-      const employees = (await fetchEmployees()).data;
-      const clients = (await fetchClients()).data;
-      const products = (await fetchProducts()).data;
-      const invoices = (await fetchInvoices()).data;
-      const clientTypes = (await fetchClientTypes()).data;
-      const productTypes = (await fetchProductTypes()).data;
+      try {
+        const jobs = (await fetchJobs()).data || [];
+        const employees = (await fetchEmployees()).data || [];
+        const clients = (await fetchClients()).data || [];
+        const products = (await fetchProducts()).data || [];
+        const invoices = (await fetchInvoices()).data || [];
+        const clientTypes = (await fetchClientTypes()).data || [];
+        const productTypes = (await fetchProductTypes()).data || [];
 
-      // Counts for cards
-      setCounts({
-        jobs: jobs.length,
-        employees: employees.length,
-        clients: clients.length,
-        products: products.length,
-        invoices: invoices.length,
-        productTypes: productTypes.length
-      });
+        // Counts for cards
+        setCounts({
+          jobs: jobs.length,
+          employees: employees.length,
+          clients: clients.length,
+          products: products.length,
+          invoices: invoices.length,
+          productTypes: productTypes.length
+        });
 
-      // Clients by type
-      setClientTypeData(clientTypes.map(type => ({
-        name: type.TYPE_NAME,
-        value: clients.filter(c => c.CLIENT_TYPE === type.CLIENT_TYPE).length
-      })));
+        // Clients by type
+        setClientTypeData(clientTypes.map(type => ({
+          name: type.TYPE_NAME,
+          value: clients.filter(c => c.CLIENT_TYPE === type.CLIENT_TYPE).length
+        })));
 
-      // Products by type
-      setProductTypeData(productTypes.map(type => ({
-        name: type.ProductType_Name,
-        value: products.filter(p => p.ProductType === type.ProductType_ID).length
-      })));
+        // Products by type
+        setProductTypeData(productTypes.map(type => ({
+          name: type.ProductType_Name, // name from productTypes table
+          value: products.filter(p => p.ProductType === type.ProductType_ID).length // match your DB column
+        })));
 
-      // Invoices by status
-      const statusCounts = [...new Set(invoices.map(inv => inv.Invoice_status))].map(status => ({
-        name: status,
-        value: invoices.filter(inv => inv.Invoice_status === status).length
-      }));
-      setInvoiceStatusData(statusCounts);
+        // Invoices by status
+        const statuses = [...new Set(invoices.map(inv => inv.Invoice_status || "Unknown"))]; // make sure column exists
+        setInvoiceStatusData(statuses.map(status => ({
+          name: status,
+          value: invoices.filter(inv => (inv.Invoice_status || "Unknown") === status).length
+        })));
 
-      // Revenue & Profit per product
-      setRevenueData(products.map(p => ({
-        name: p.ProductName,
-        revenue: (p.Sell_price || 0) * (p.QTY_ON_HAND || 0),
-        profit: ((p.Sell_price || 0) - (p.Cost_Price || 0)) * (p.QTY_ON_HAND || 0)
-      })));
+        // Revenue & Profit per product
+        setRevenueData(products.map(p => ({
+          name: p.ProductName,
+          revenue: (p.SELL_PRICE || 0) * (p.QTY_ON_HAND || 0),
+          profit: ((p.SELL_PRICE || 0) - (p.COST_PRICE || 0)) * (p.QTY_ON_HAND || 0)
+        })));
 
-      // Recent Activity (last 5 activities from invoices, products, employees)
-      const activityList = [
-        ...invoices.slice(-5).reverse().map(inv => ({
-          user: `Client ${inv.Client_no}`,
-          action: `Invoice #${inv.InvoiceNo} (${inv.Invoice_status})`,
-          date: inv.Invoice_date
-        })),
-        ...products.slice(-5).reverse().map(p => ({
-          user: "System",
-          action: `Product added/updated: ${p.ProductName}`,
-          date: new Date() // fallback date
-        })),
-        ...employees.slice(-5).reverse().map(e => ({
-          user: e.EmployeeName,
-          action: "Employee profile updated",
-          date: new Date() // fallback date
-        }))
-      ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+        // Recent Activity (last 10 user actions)
+        // Fallback recent activity without users
+        const activityList = [
+          ...invoices.map(inv => ({
+            action: `Invoice #${inv.InvoiceNo} (${inv.Invoice_status || "Unknown"})`,
+            date: new Date(inv.Invoice_date)
+          })),
+          ...products.map(p => ({
+            action: `Product added/updated: ${p.ProductName}`,
+            date: new Date() // fallback
+          }))
+        ]
+        .sort((a, b) => a.date - b.date) // newest first
+        .slice(0, 10);
 
-      setRecentActivity(activityList);
+        setRecentActivity(activityList);
+
+
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      }
 
       setLoading(false);
     };
@@ -189,7 +191,7 @@ export default function Dashboard() {
             <BarChart data={revenueData}>
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+              <Tooltip formatter={value => `$${value.toLocaleString()}`} />
               <Legend />
               <Bar dataKey="revenue" fill="#00C49F" name="Revenue" />
             </BarChart>
@@ -202,7 +204,7 @@ export default function Dashboard() {
             <BarChart data={revenueData}>
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+              <Tooltip formatter={value => `$${value.toLocaleString()}`} />
               <Legend />
               <Bar dataKey="profit" fill="#FF8042" name="Profit" />
             </BarChart>

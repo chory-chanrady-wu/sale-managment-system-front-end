@@ -17,6 +17,7 @@ export default function Header() {
         <NavLink to="/product-types" className={linkClasses}>Product Types</NavLink>
         <NavLink to="/products" className={linkClasses}>Products</NavLink>
         <NavLink to="/invoices" className={linkClasses}>Invoices</NavLink>
+        <NavLink to="/reports" className={linkClasses}>ReportManagement</NavLink>
       </nav>
     </header>
   );
