@@ -43,26 +43,49 @@ export default function ReportManagement() {
         }
     };
 
-
-    // Preview template data
+      // Preview template data with bind prompts
     const handlePreview = async (template) => {
-    try {
-        const res = await axios.post(`${API_URL}/generate/${template.TEMPLATEID}`, { format: 'json' });
-        if (Array.isArray(res.data)) {
-        setPreviewData(res.data);
-        setPreviewColumns(res.data.length > 0 ? Object.keys(res.data[0]) : []);
-        setSelectedTemplateId(template.TEMPLATEID);
+      try {
+        const sql = template.SQLQUERY;
+
+        // 1. Extract bind variables from SQL (like :id, :startDate)
+        const bindMatches = [...sql.matchAll(/:\w+/g)];
+        const bindKeys = [...new Set(bindMatches.map(m => m[0].substring(1)))];
+
+        let binds = {};
+        if (bindKeys.length > 0) {
+          // 2. Prompt user for each bind variable
+          for (const key of bindKeys) {
+            const value = prompt(`Enter value for ${key}:`);
+            if (value === null) {
+              // User cancelled
+              return;
+            }
+            binds[key] = value;
+          }
         }
-    } catch (err) {
+
+        // 3. Call backend with template ID and binds
+        const res = await axios.post(`${API_URL}/generate/${template.TEMPLATEID}`, {
+          format: 'json',
+          binds
+        });
+
+        if (Array.isArray(res.data)) {
+          setPreviewData(res.data);
+          setPreviewColumns(res.data.length > 0 ? Object.keys(res.data[0]) : []);
+          setSelectedTemplateId(template.TEMPLATEID);
+        }
+      } catch (err) {
         console.error('Failed to fetch preview:', err);
         const msg = err.response?.data?.error || 'Failed to fetch preview. Check backend logs.';
         alert(msg);
 
-        // clear preview data when error
+        // Clear preview if error
         setPreviewData([]);
         setPreviewColumns([]);
         setSelectedTemplateId(null);
-    }
+      }
     };
 
     // Preview new template before saving

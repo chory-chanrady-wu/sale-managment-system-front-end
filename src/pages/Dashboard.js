@@ -15,7 +15,7 @@ import {
 
 import {
   PieChart, Pie, Cell,
-  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LabelList
 } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AA336A", "#9933FF"];
@@ -60,17 +60,23 @@ export default function Dashboard() {
         })));
 
         // Products by type
-        setProductTypeData(productTypes.map(type => ({
-          name: type.ProductType_Name, // name from productTypes table
-          value: products.filter(p => p.ProductType === type.ProductType_ID).length // match your DB column
-        })));
+        setProductTypeData(productTypes.map(type => {
+          const typeId = type.PRODUCTTYPE_ID?.toString();
+          const typeName = type.PRODUCTTYPE_NAME || "Unknown";
+
+          const count = products.filter(p => p.PRODUCT_TYPE?.toString() === typeId).length;
+
+          return { name: typeName, count };
+        }));
 
         // Invoices by status
-        const statuses = [...new Set(invoices.map(inv => inv.Invoice_status || "Unknown"))]; // make sure column exists
+        const statuses = [...new Set(invoices.map(inv => (inv.INVOICE_STATUS || "Unknown").toString()))];
+
         setInvoiceStatusData(statuses.map(status => ({
           name: status,
-          value: invoices.filter(inv => (inv.Invoice_status || "Unknown") === status).length
+          value: invoices.filter(inv => (inv.INVOICE_STATUS || "Unknown").toString() === status).length
         })));
+
 
         // Revenue & Profit per product
         setRevenueData(products.map(p => ({
@@ -159,9 +165,11 @@ export default function Dashboard() {
             <BarChart data={productTypeData}>
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip formatter={(value) => [`${value}`, "Products"]} />
               <Legend />
-              <Bar dataKey="value" fill="#8884d8" />
+              <Bar dataKey="value" fill="#8884d8" name="Number of Products">
+                <LabelList dataKey="value" position="top" /> {/* <-- This shows count on top */}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -241,7 +241,7 @@ export default function InvoiceManagement() {
                 const clientName = clients.find(c => c.CLIENT_NO === i.CLIENT_NO)?.CLIENTNAME || "";
                 const employeeName = employees.find(e => e.EMPLOYEEID === i.EMPLOYEEID)?.EMPLOYEENAME || "";
 
-                      // Calculate total amount
+                // Calculate total amount
                 const totalAmount = i.details?.reduce((sum, d) => sum + d.QTY * d.PRICE, 0) || 0;
                 return (
                   <tr key={i.INVOICENO} className="border-b hover:bg-gray-100">
@@ -263,7 +263,7 @@ export default function InvoiceManagement() {
                     <td className="px-2 py-1 border">{employeeName}</td>
                     <td className="px-2 py-1 border text-center">{i.INVOICE_STATUS}</td>
                     <td className="px-2 py-1 border text-center">{i.details?.length || 0}</td>
-                    <td className="px-2 py-1 border text-center">${totalAmount.toFixed(2)}</td>
+                    <td className="px-2 py-1 border text-center">{totalAmount.toFixed(2)}$</td>
                     <td className="px-2 py-1 border">{i.INVOICEMEMO}</td>
                     <td className="px-2 py-1 border text-center space-x-1">
                       <button
